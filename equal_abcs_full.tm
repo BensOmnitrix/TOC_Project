@@ -20,14 +20,14 @@ qSeekB X -> X R qSeekB
 qSeekB b -> Y R qSeekC
 qSeekB Y -> Y R qSeekB
 qSeekB Z -> Z R qSeekB
-qSeekB _ -> _ S qrej   # missing b -> reject
+qSeekB _ -> _ S qrej
 
 # qSeekC: move right to find first unmarked 'c'
 qSeekC b -> b R qSeekC
 qSeekC Y -> Y R qSeekC
 qSeekC c -> Z L qReturn
 qSeekC Z -> Z R qSeekC
-qSeekC _ -> _ S qrej   # missing c -> reject
+qSeekC _ -> _ S qrej
 
 # qReturn: return to leftmost to find next 'a'
 qReturn a -> a L qReturn

@@ -1,5 +1,5 @@
 # string_reversal_full.tm
-states: q0,qScanRight,qFindRightUnmarked,qMarkRightmost,qMoveToEnd,qWrite, qBackToSource,qCheck,qacc,qrej
+states: q0,qScanRight,qFindRightUnmarked,qScanUnmarked,qCheckDone,qMarkRightmost,qBackToSourceA,qBackToSourceB,qMoveToEndA,qMoveToEndB,qSkipOutputA,qSkipOutputB,qacc,qrej
 start: q0
 accept: qacc
 reject: qrej
@@ -17,83 +17,72 @@ qScanRight a -> a L qScanRight
 qScanRight b -> b L qScanRight
 qScanRight A -> A L qScanRight
 qScanRight B -> B L qScanRight
+qScanRight | -> | L qScanRight
 qScanRight _ -> _ R qFindRightUnmarked
 
-# qFindRightUnmarked: move right to find rightmost unmarked (the loop chooses rightmost by scanning until blank and stepping left)
-qFindRightUnmarked a -> a R qFindRightUnmarked
-qFindRightUnmarked b -> b R qFindRightUnmarked
+# qFindRightUnmarked: move right through marked chars, when hit unmarked continue to find last unmarked
 qFindRightUnmarked A -> A R qFindRightUnmarked
 qFindRightUnmarked B -> B R qFindRightUnmarked
-qFindRightUnmarked _ -> _ L qMarkRightmost
+qFindRightUnmarked a -> a R qScanUnmarked
+qFindRightUnmarked b -> b R qScanUnmarked
+qFindRightUnmarked | -> | L qCheckDone
+qFindRightUnmarked _ -> | L qCheckDone
 
-# qMarkRightmost: mark the rightmost unmarked as A/B, remember symbol by state, then go to end to write
-qMarkRightmost a -> A L qBackToSource
-qMarkRightmost b -> B L qBackToSource
-qMarkRightmost A -> A L qBackToSource
-qMarkRightmost B -> B L qBackToSource
+# qScanUnmarked: continue right through unmarked to find rightmost
+qScanUnmarked a -> a R qScanUnmarked
+qScanUnmarked b -> b R qScanUnmarked
+qScanUnmarked A -> A L qMarkRightmost
+qScanUnmarked B -> B L qMarkRightmost
+qScanUnmarked | -> | L qMarkRightmost
+qScanUnmarked _ -> | L qMarkRightmost
 
-# qBackToSource: move left to the leftmost delimiter (we'll find a blank left of original string to use as write area)
-qBackToSource a -> a L qBackToSource
-qBackToSource b -> b L qBackToSource
-qBackToSource A -> A L qBackToSource
-qBackToSource B -> B L qBackToSource
-qBackToSource _ -> _ R qMoveToEnd
+# qCheckDone: check if any unmarked chars exist, if not accept
+qCheckDone A -> A L qCheckDone
+qCheckDone B -> B L qCheckDone
+qCheckDone a -> a S qMarkRightmost
+qCheckDone b -> b S qMarkRightmost
+qCheckDone _ -> _ S qacc
 
-# qMoveToEnd: move right to find the first blank after original string (that will be writing zone)
-qMoveToEnd a -> a R qMoveToEnd
-qMoveToEnd b -> b R qMoveToEnd
-qMoveToEnd A -> A R qMoveToEnd
-qMoveToEnd B -> B R qMoveToEnd
-qMoveToEnd _ -> | R qWrite   # place a delimiter '|' then write copy symbol
+# qMarkRightmost: mark the rightmost unmarked as A/B, REMEMBER by transitioning to different states
+qMarkRightmost a -> A L qBackToSourceA
+qMarkRightmost b -> B L qBackToSourceB
 
-# qWrite: write the symbol based on the marked symbol we left behind (we determine by scanning left and finding last A/B)
-# To simplify, when we arrived to write, the last unread marked symbol is either A or B nearest left; we write appropriate letter at current cell.
-qWrite _ -> _ L qCheck   # placeholder (we'll actually write by stepping back to find the A/B and writing from there)
-# Practical approach for single-tape TM: instead we will re-find the marked symbol: go left to find A/B, record symbol by state,
-# return to delimiter area and write actual letter. Implemented as follows:
+# qBackToSourceA: marked an 'a', now go back to start
+qBackToSourceA a -> a L qBackToSourceA
+qBackToSourceA b -> b L qBackToSourceA
+qBackToSourceA A -> A L qBackToSourceA
+qBackToSourceA B -> B L qBackToSourceA
+qBackToSourceA _ -> _ R qMoveToEndA
 
-# Instead of qWrite above, we do:
-qMoveToEnd | -> | R qWrite
+# qBackToSourceB: marked a 'b', now go back to start
+qBackToSourceB a -> a L qBackToSourceB
+qBackToSourceB b -> b L qBackToSourceB
+qBackToSourceB A -> A L qBackToSourceB
+qBackToSourceB B -> B L qBackToSourceB
+qBackToSourceB _ -> _ R qMoveToEndB
 
-# qWrite: if we see blank, we must determine which marked symbol is waiting. We'll search left for A or B, remember and write.
-qWrite _ -> _ L qFindMarkToCopy
-qWrite a -> a R qWrite
-qWrite b -> b R qWrite
-qWrite A -> A R qWrite
-qWrite B -> B R qWrite
-qWrite | -> | R qWrite
+# qMoveToEndA: move to output area to write 'a'
+qMoveToEndA a -> a R qMoveToEndA
+qMoveToEndA b -> b R qMoveToEndA
+qMoveToEndA A -> A R qMoveToEndA
+qMoveToEndA B -> B R qMoveToEndA
+qMoveToEndA | -> | R qSkipOutputA
+qMoveToEndA _ -> | R qSkipOutputA
 
-# qFindMarkToCopy: go left until find A or B, then set state to write appropriate symbol
-qFindMarkToCopy A -> A R qReturnWriteA
-qFindMarkToCopy B -> B R qReturnWriteB
-qFindMarkToCopy a -> a L qFindMarkToCopy
-qFindMarkToCopy b -> b L qFindMarkToCopy
-qFindMarkToCopy _ -> _ L qFindMarkToCopy
+# qMoveToEndB: move to output area to write 'b'
+qMoveToEndB a -> a R qMoveToEndB
+qMoveToEndB b -> b R qMoveToEndB
+qMoveToEndB A -> A R qMoveToEndB
+qMoveToEndB B -> B R qMoveToEndB
+qMoveToEndB | -> | R qSkipOutputB
+qMoveToEndB _ -> | R qSkipOutputB
 
-# qReturnWriteA: move right to delimiter area and write 'a'
-qReturnWriteA a -> a R qReturnWriteA
-qReturnWriteA b -> b R qReturnWriteA
-qReturnWriteA A -> A R qReturnWriteA
-qReturnWriteA B -> B R qReturnWriteA
-qReturnWriteA | -> | R qPutA
-qReturnWriteA _ -> _ R qReturnWriteA
+# qSkipOutputA: skip existing output characters to find blank, then write 'a'
+qSkipOutputA a -> a R qSkipOutputA
+qSkipOutputA b -> b R qSkipOutputA
+qSkipOutputA _ -> a L qScanRight
 
-# qPutA: write 'a' at current blank and return left to continue
-qPutA _ -> a L qScanRight
-
-# qReturnWriteB: symmetrical for 'b'
-qReturnWriteB a -> a R qReturnWriteB
-qReturnWriteB b -> b R qReturnWriteB
-qReturnWriteB A -> A R qReturnWriteB
-qReturnWriteB B -> B R qReturnWriteB
-qReturnWriteB | -> | R qPutB
-qReturnWriteB _ -> _ R qReturnWriteB
-
-qPutB _ -> b L qScanRight
-
-# qCheck: after writing, check if any unmarked left remains; if only marks exist, accept
-qCheck A -> A R qCheck
-qCheck B -> B R qCheck
-qCheck a -> a S qScanRight
-qCheck b -> b S qScanRight
-qCheck _ -> _ S qacc
+# qSkipOutputB: skip existing output characters to find blank, then write 'b'
+qSkipOutputB a -> a R qSkipOutputB
+qSkipOutputB b -> b R qSkipOutputB
+qSkipOutputB _ -> b L qScanRight
