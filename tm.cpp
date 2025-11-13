@@ -17,7 +17,7 @@ struct TM {
     char blank = '_'; // blank symbol
     string start, accept, reject; // q0, qaccept, qreject
     unordered_map<string, unordered_map<char, Rule>> delta; // δ transition function
-    // gives rule for state symbol pair
+    // gives transition rule for state symbol pair
     // ex: delta["q0"]['a'] = Rule{'b','R',"q1"};
 
     // Runtime
