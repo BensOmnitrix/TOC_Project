@@ -2,19 +2,23 @@
 using namespace std;
 
 // ---------- Data structures ----------
+// transition rule for the Turing machine
 struct Rule {
     char write;
     char move;     // 'L', 'R', 'S'
     string next;
 };
+// δ(q, read) → (write, move, q')
 
 struct TM {
-    unordered_set<string> states;
-    unordered_set<char> inputAlphabet;
-    unordered_set<char> tapeAlphabet;
-    char blank = '_';
-    string start, accept, reject;
-    unordered_map<string, unordered_map<char, Rule>> delta;
+    unordered_set<string> states; // Q: set of states
+    unordered_set<char> inputAlphabet; // Σ: input alphabet
+    unordered_set<char> tapeAlphabet; // Γ: tape alphabet
+    char blank = '_'; // blank symbol
+    string start, accept, reject; // q0, qaccept, qreject
+    unordered_map<string, unordered_map<char, Rule>> delta; // δ transition function
+    // gives rule for state symbol pair
+    // ex: delta["q0"]['a'] = Rule{'b','R',"q1"};
 
     // Runtime
     string state;
@@ -432,6 +436,7 @@ int main(int argc, char** argv) {
             return 1;
         }
 
+        //load tape
         tm.reset(args.input);
 
         auto show = [&](){

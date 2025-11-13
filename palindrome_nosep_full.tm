@@ -14,14 +14,14 @@ q0 b -> B R qSeekRightB
 
 qSeekRightA a -> a R qSeekRightA
 qSeekRightA b -> b R qSeekRightA
-qSeekRightA A -> A R qSeekRightA
-qSeekRightA B -> B R qSeekRightA
+qSeekRightA A -> A L qCompareA
+qSeekRightA B -> B L qCompareA
 qSeekRightA _ -> _ L qCompareA
 
 qSeekRightB a -> a R qSeekRightB
 qSeekRightB b -> b R qSeekRightB
-qSeekRightB A -> A R qSeekRightB
-qSeekRightB B -> B R qSeekRightB
+qSeekRightB A -> A L qCompareB
+qSeekRightB B -> B L qCompareB
 qSeekRightB _ -> _ L qCompareB
 
 qCompareA a -> A L qReturn

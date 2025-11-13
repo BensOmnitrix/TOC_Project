@@ -1,23 +1,22 @@
-states: qInit,qInitReturn,q0,qMoveToEndA,qMoveToEndB,qReturn,qacc,qrej
-start: qInit
+states: q0,qInitReturn,qMarkCopy,qMoveToEndA,qMoveToEndB,qReturn,qacc
+start: q0
 accept: qacc
-reject: qrej
+reject: qacc
 blank: _
 input_alphabet: a,b
 tape_alphabet: a,b,A,B,|,_
 delta:
-qInit a -> a R qInit
-qInit b -> b R qInit
-qInit _ -> | L qInitReturn
+q0 a -> a R q0
+q0 b -> b R q0
+q0 _ -> | L qInitReturn
 qInitReturn a -> a L qInitReturn
 qInitReturn b -> b L qInitReturn
-qInitReturn _ -> _ R q0
-q0 _ -> _ R q0
-q0 a -> A R qMoveToEndA
-q0 b -> B R qMoveToEndB
-q0 A -> A R q0
-q0 B -> B R q0
-q0 | -> | S qacc
+qInitReturn _ -> _ R qMarkCopy
+qMarkCopy A -> A R qMarkCopy
+qMarkCopy B -> B R qMarkCopy
+qMarkCopy a -> A R qMoveToEndA
+qMarkCopy b -> B R qMoveToEndB
+qMarkCopy | -> | S qacc
 qMoveToEndA a -> a R qMoveToEndA
 qMoveToEndA b -> b R qMoveToEndA
 qMoveToEndA A -> A R qMoveToEndA
@@ -32,7 +31,7 @@ qMoveToEndB | -> | R qMoveToEndB
 qMoveToEndB _ -> b L qReturn
 qReturn a -> a L qReturn
 qReturn b -> b L qReturn
-qReturn A -> A L qReturn
-qReturn B -> B L qReturn
+qReturn A -> A R qMarkCopy
+qReturn B -> B R qMarkCopy
 qReturn | -> | L qReturn
-qReturn _ -> _ R q0
+qReturn _ -> _ R qMarkCopy
