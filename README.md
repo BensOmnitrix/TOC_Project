@@ -46,6 +46,17 @@ In interactive mode the prompt accepts:
 - `r` to run up to the step cap (`--max-steps`).
 - `q` to quit.
 
+**Git Bash / MSYS2 notes**
+- The `g++` build command and the runtime examples work in Git Bash (or MSYS2) as long as you have a MinGW/MSYS2 toolchain installed and `g++` is on your `PATH`.
+- In Git Bash use `./tm.exe` (forward slash) instead of `\\.\\tm.exe`:
+
+```
+./tm.exe --example binary_incrementer --input 101 --run
+```
+
+- If you compiled with MinGW/MSYS2 `g++` the produced `tm.exe` runs both in Git Bash and in `cmd.exe`.
+- The Visual C++ compiler (`cl`) normally requires the Developer Command Prompt to set environment variables; it's simplest to use MinGW in Git Bash. If you prefer MSVC, run `cl` from the Visual Studio Developer Command Prompt or bootstrap the environment first.
+
 **Command-line flags**
 - `--example NAME` : use a built-in machine (examples below).
 - `--file PATH`    : load machine from a `.tm` file.
