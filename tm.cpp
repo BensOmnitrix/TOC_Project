@@ -2,36 +2,33 @@
 using namespace std;
 
 // ---------- Data structures ----------
-// transition rule for the Turing machine
 struct Rule {
     char write;
     char move;     // 'L', 'R', 'S'
     string next;
 };
-// δ(q, read) → (write, move, q')
 
 struct TM {
-    unordered_set<string> states; // Q: set of states
-    unordered_set<char> inputAlphabet; // Σ: input alphabet
-    unordered_set<char> tapeAlphabet; // Γ: tape alphabet
-    char blank = '_'; // blank symbol
-    string start, accept, reject; // q0, qaccept, qreject
-    unordered_map<string, unordered_map<char, Rule>> delta; // δ transition function
-    // gives transition rule for state symbol pair
-    // ex: delta["q0"]['a'] = Rule{'b','R',"q1"};
+    unordered_set<string> states;
+    unordered_set<char> inputAlphabet;
+    unordered_set<char> tapeAlphabet;
+    char blank = '_';
+    string start, accept, reject;
+    unordered_map<string, unordered_map<char, Rule>> delta;
 
     // Runtime
     string state;
     long long head = 0;
     long long steps = 0;
-    optional<tuple<string,char,char,char,string>> lastRule; // q,read,write,move,q'
+    bool hasLastRule = false;
+    tuple<string,char,char,char,string> lastRule; // q,read,write,move,q'
     unordered_map<long long,char> tape; // sparse
 
     void reset(const string& input) {
         state = start;
         head = 0;
         steps = 0;
-        lastRule.reset();
+        hasLastRule = false;
         tape.clear();
         for (size_t i=0;i<input.size();++i) {
             char c = input[i];
@@ -52,7 +49,8 @@ struct TM {
         auto sit = delta.find(state);
         if (sit==delta.end() || sit->second.find(sym)==sit->second.end()) {
             // implicit reject on missing transition
-            lastRule = tuple(state, sym, (char)0, (char)0, reject);
+            lastRule = make_tuple(state, sym, (char)0, (char)0, reject);
+            hasLastRule = false;
             state = reject;
             return false;
         }
@@ -65,7 +63,8 @@ struct TM {
         else if (r.move=='S') {}
         else throw runtime_error("Bad move: "s + r.move);
         // next
-        lastRule = tuple(state, sym, r.write, r.move, r.next);
+        lastRule = make_tuple(state, sym, r.write, r.move, r.next);
+        hasLastRule = true;
         state = r.next;
         steps++;
         return true;
@@ -103,8 +102,12 @@ struct TM {
             caret.push_back(' ');
         }
         string info = "state=" + state + " steps=" + to_string(steps);
-        if (lastRule.has_value() && get<2>(*lastRule)!=0) {
-            auto [q,r,w,m,qn] = *lastRule;
+        if (hasLastRule && get<2>(lastRule)!=0) {
+            string q = get<0>(lastRule);
+            char r = get<1>(lastRule);
+            char w = get<2>(lastRule);
+            char m = get<3>(lastRule);
+            string qn = get<4>(lastRule);
             info += " last: δ(" + q + "," + string(1,r) + ")->(" +
                     string(1,w) + "," + string(1,m) + "," + qn + ")";
         }
@@ -436,7 +439,6 @@ int main(int argc, char** argv) {
             return 1;
         }
 
-        //load tape
         tm.reset(args.input);
 
         auto show = [&](){
@@ -445,7 +447,9 @@ int main(int argc, char** argv) {
 
         if (args.run) {
             show();
-            auto [halted, reason] = tm.run(args.maxSteps);
+            pair<bool,string> result = tm.run(args.maxSteps);
+            bool halted = result.first;
+            string reason = result.second;
             show();
             cout << "\nResult: halted=" << (halted?"true":"false")
                  << " accepted=" << (tm.state==tm.accept?"true":"false")
@@ -464,7 +468,9 @@ int main(int argc, char** argv) {
             string cmd; for (auto c: line) if (!isspace((unsigned char)c)) cmd.push_back(tolower(c));
             if (cmd=="q") break;
             if (cmd=="r") {
-                auto [halted, reason] = tm.run(args.maxSteps);
+                pair<bool,string> result = tm.run(args.maxSteps);
+                bool halted = result.first;
+                string reason = result.second;
                 show();
                 cout << "\nResult: halted=" << (halted?"true":"false")
                      << " accepted=" << (tm.state==tm.accept?"true":"false")
