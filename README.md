@@ -4,7 +4,7 @@ This repository contains a small, easy-to-understand Turing Machine simulator wr
 
 **Overview**
 - **What:** A tiny Turing Machine simulator that loads a machine either from a built-in example or from a `.tm` file and runs it interactively or to completion.
-- **Where:** Main source: `tm.cpp`. Example machines: `binary_incrementer.tm`, `palindrome_ab_hash.tm`, `anbn.tm`, `unary_add_full.tm`, `non_halting_right.tm`, `string_duplicate.tm`, etc.
+- **Where:** Main source: `tm.cpp`. Example machines: `binary_incrementer.tm`, `palindrome_nosep_full.tm`, `anbn.tm`, `unary_add_full.tm`, `non_halting_right.tm`, `string_duplicate.tm`, etc.
 
 **Prerequisites**
 - **Compiler:** A C++17 compiler. On Windows you can use `g++` (from MinGW or MSYS2) or Microsoft Visual C++ (`cl`).
@@ -68,7 +68,7 @@ In interactive mode the prompt accepts:
 
 **Built-in examples**
 - `binary_incrementer`
-- `palindrome_ab_hash`
+- `palindrome_nosep_full`
 - `anbn`
 - `unary_add`
 - `non_halting_right`
